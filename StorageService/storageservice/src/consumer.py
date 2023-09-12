@@ -27,13 +27,14 @@ class RawTopicConsumer():
         self.camera_id=cameraid
         self.kafkahost=kafkashost
         self.config=config
+        # self.minioclient=minioclient
+        # self.mongoclient=mongoclient
         self.consumer=None
         self.log=logger
         self.check=False
         self.previous_time=datetime.now()
         data=topic_smd[cameraid]
 
-        print("&"*100)
         # print(self.config)
         # print(self.minioclient)
         # print(self.mongoclient)
@@ -55,12 +56,15 @@ class RawTopicConsumer():
         self.consumer=KafkaConsumer("out_"+self.topic, bootstrap_servers=self.kafkahost, auto_offset_reset="latest",
                                  value_deserializer=lambda m: json.loads(m.decode('utf-8')),group_id=self.topic)
         #self.consumer.assign([TopicPartition(self.topic, 1)])
+        clientobj = CreateClient(self.config)
+        self.minioclient = clientobj.minio_client()
+        self.mongoclient = clientobj.mongo_client()
         self.log.info(f"Connected Consumer {self.camera_id} for {self.topic}")
 
         return
         
     def isConnected(self):
-        #print("====Check Self COnsumer====",self.consumer)
+        #print("====Check Self Consumer====",self.consumer)
         return self.consumer.bootstrap_connected()
     def messageParser(self,msg):
         #msg=ast.literal_eval(msg)
@@ -73,13 +77,10 @@ class RawTopicConsumer():
         return raw_image, process_image, incident_event, usecase_inform
     
     def runConsumer(self):
-        print(f"=={self.camera_id} Message Parse Connected for Topic {self.topic}====")
+        print(f"==={self.camera_id} Message Parse Connected for Topic {self.topic}====")
         self.check=True
         
         self.log.info(f"Starting Message Parsing {self.camera_id} for {self.topic}")
-        clientobj = CreateClient(self.config)
-        self.minioclient = clientobj.minio_client()
-        self.mongoclient = clientobj.mongo_client()
         # print("#"*100)
         # print(self.minioclient)
         # while True:
@@ -92,4 +93,3 @@ class RawTopicConsumer():
             minio_saved_paths = minio_obj.save_raw_processed_image()
             mongo_obj = MongoDBSave(self.mongoclient, incident_event, minio_saved_paths)
             mongo_obj.save_mongodata()
-            

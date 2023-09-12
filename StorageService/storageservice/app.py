@@ -1,5 +1,5 @@
 """
-Code to start PreProcessing and Cosnumers
+Code to start PreProcessing and Consumers
 """
 import os
 from shared_memory_dict import SharedMemoryDict

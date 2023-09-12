@@ -10,10 +10,9 @@ from multiprocessing import Manager
 import json
 from shared_memory_dict import SharedMemoryDict
 os.environ["SHARED_MEMORY_USE_LOCK"]="1"
+from src.createclient import CreateClient
 
 topic_smd = SharedMemoryDict(name='topics', size=10000000)
-
-
 
 def testcallbackFuture(future):
     print("=======callback future====",future.exception())
@@ -64,8 +63,7 @@ class PoolConsumer():
         """
         usecase=list(camdata.keys()) 
         #print(camdata)
-        for i in usecase:
-            
+        for i in usecase:            
             schedule_id=camdata[i]["scheduling_id"]
             # print("=====>scheule===>",camdata[i])
             camdata[i]["current_state"]=scheduledata[str(schedule_id)]["current_state"]
@@ -101,6 +99,9 @@ class PoolConsumer():
                 if cam_id not in statusdict:
                     #print("*********",preproceesdata)
                     topic_smd[cam_id]=topicdata[cam]
+                    clientobj = CreateClient(self.config)
+                    # self.minioclient = clientobj.minio_client()
+                    # self.mongoclient = clientobj.mongo_client()
                     obj = RawTopicConsumer(self.kafkahost,cam_id,self.config,self.log)
                     statusdict[cam_id]=obj
                     future1=executor.submit(testFuture,obj)
@@ -131,10 +132,6 @@ class PoolConsumer():
                         #preproceesdata=self.getScheduleState(scheduledata,camdata[cam])
                         topic_smd[cam_id]=topicdata[cam]
                         self.log.info(f"Updating Data for {cam_id}")
-                        
-                        
-
-            
                 time.sleep(3)
             #print(statusdict)
             time.sleep(5)     

@@ -7,7 +7,7 @@ class CreateClient():
         self.config=config
         self.minioconf = self.config['minio']
         self.mongodbconf = self.config['mongodb']
-        print(self.mongodbconf)
+        # print(self.mongodbconf)
     
     def minio_client(self):
         minio_client = Minio(endpoint=self.minioconf["endpoint"],
