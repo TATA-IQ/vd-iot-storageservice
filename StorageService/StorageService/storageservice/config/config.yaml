@@ -1,0 +1,32 @@
+---
+apis:
+  camera_group: "http://127.0.0.1:8000/getCameraGroup"
+  topics: "http://127.0.0.1:8000/gettopics"
+
+kafka:
+  - 172.16.0.175:9092
+  - 172.16.0.171:9092
+  - 172.16.0.174:9092
+
+readConfig: true
+config:
+  customer:
+    - 1
+    - 2
+    - 3
+  zone:
+    - 1
+    - 2
+    - 3
+  subsite:
+    - 1
+    - 2
+    - 3
+  location:
+    - 1
+    - 2 
+    - 3
+  group:
+    - 1
+    - 2
+    - 3

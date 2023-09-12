@@ -1,0 +1,54 @@
+site_name: StorageService
+repo_url: https://github.com/./StorageService
+site_url: https://..github.io/StorageService
+site_description: This module will store DB data in mongo and image data in minio
+site_author: TataiQ
+edit_uri: edit/main/docs/
+repo_name: ./StorageService
+copyright: Maintained by <a href="https://..com">Florian</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+            setup_commands:
+                - import sys
+                - sys.path.append('../')
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/./StorageService
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/StorageService
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
