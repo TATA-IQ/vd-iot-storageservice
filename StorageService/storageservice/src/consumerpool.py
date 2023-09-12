@@ -27,11 +27,14 @@ def testFuture(obj):
 
 class PoolConsumer():
     
-    def __init__(self,kafkahost,logger):
+    def __init__(self,data,logger):
         '''
         Initialize the  Camera Group and connect with redis to take the recent configuration
         '''
-        self.kafkahost=kafkahost
+        self.config = data
+        print("&"*100)
+        print(self.config)
+        self.kafkahost=data["kafka"]
         pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
         self.r = redis.Redis(connection_pool=pool)
         self.dict3={}
@@ -72,7 +75,7 @@ class PoolConsumer():
         """
         Always updates the data from the caching
         For ex: If any camera is added in group, it will check the group and start new process for camera or remove camera if
-        camera is delated from the group
+        camera is deleted from the group
         """
         
         listcam=[]
@@ -94,45 +97,45 @@ class PoolConsumer():
                 
                 cam_id=topicdata[cam]["camera_id"]
                 
-                if cam_id<50:
-                    if cam_id not in statusdict:
-                        #print("*********",preproceesdata)
+                # if cam_id<50:
+                if cam_id not in statusdict:
+                    #print("*********",preproceesdata)
+                    topic_smd[cam_id]=topicdata[cam]
+                    obj = RawTopicConsumer(self.kafkahost,cam_id,self.config,self.log)
+                    statusdict[cam_id]=obj
+                    future1=executor.submit(testFuture,obj)
+                    future1.add_done_callback(testcallbackFuture)
+                    #listapp.append(future1)
+                    futuredict[cam_id]=future1
+                    self.log.info(f"Starting Conusmer for {cam_id}")
+                    
+                else:
+                    #print(futuredict)
+                    # print("=====else===",cam_id)
+                    # print(futuredict[cam_id].done())
+                    # print(futuredict[cam_id].running())
+                    # #print("=====else===",cam_id)
+                    if futuredict[cam_id].running()==False:
+                        futuredict[cam_id].cancel()
                         topic_smd[cam_id]=topicdata[cam]
-                        obj = RawTopicConsumer(self.kafkahost,cam_id,self.log)
+                        #preprocess_smd[cam_id]=camdata[cam]
+                        obj = RawTopicConsumer(self.kafkahost,cam_id,self.config,self.log)
                         statusdict[cam_id]=obj
+                        print("Starting consumer else====",cam_id)
                         future1=executor.submit(testFuture,obj)
-                        future1.add_done_callback(testcallbackFuture)
                         #listapp.append(future1)
                         futuredict[cam_id]=future1
-                        self.log.info(f"Starting Conusmer for {cam_id}")
-                        
+                        self.log.info(f"Starting New Conusmer for {cam_id}")
                     else:
-                        #print(futuredict)
-                        # print("=====else===",cam_id)
-                        # print(futuredict[cam_id].done())
-                        # print(futuredict[cam_id].running())
-                        # #print("=====else===",cam_id)
-                        if futuredict[cam_id].running()==False:
-                            futuredict[cam_id].cancel()
-                            preprocess_smd[cam_id]=topicdata[cam]
-                            #preprocess_smd[cam_id]=camdata[cam]
-                            obj = RawTopicConsumer(self.kafkahost,cam_id,self.log)
-                            statusdict[cam_id]=obj
-                            print("Starting consumer else====",cam_id)
-                            future1=executor.submit(testFuture,obj)
-                            #listapp.append(future1)
-                            futuredict[cam_id]=future1
-                            self.log.info(f"Starting New Conusmer for {cam_id}")
-                        else:
-                            #print("Updating===>",cam_id)
-                            #preproceesdata=self.getScheduleState(scheduledata,camdata[cam])
-                            preprocess_smd[cam_id]=topicdata[cam]
-                            self.log.info(f"Updating Data for {cam_id}")
-                         
-                            
+                        #print("Updating===>",cam_id)
+                        #preproceesdata=self.getScheduleState(scheduledata,camdata[cam])
+                        topic_smd[cam_id]=topicdata[cam]
+                        self.log.info(f"Updating Data for {cam_id}")
+                        
+                        
 
-                
-                    time.sleep(3)
+            
+                time.sleep(3)
             #print(statusdict)
             time.sleep(5)     
             #print("preprocess_smd===>",postprocess_smd)   

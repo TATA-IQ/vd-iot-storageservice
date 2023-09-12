@@ -18,9 +18,8 @@ if __name__ == "__main__":
         topic_smd.shm.unlink()
         del topic_smd
         data = Config.yamlconfig("config/config.yaml")
-        # print(data[0]["kafka"])
         logg = create_rotating_log("logs/logs.log")
-        cg = PoolConsumer(data[0]["kafka"], logg)
+        cg = PoolConsumer(data[0], logg)
         cg.checkState()
     except KeyboardInterrupt:
         print("=====Removing Shared Memory Refrence=====")

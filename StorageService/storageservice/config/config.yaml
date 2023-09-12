@@ -8,6 +8,19 @@ kafka:
   - 172.16.0.171:9092
   - 172.16.0.174:9092
 
+minio:
+  endpoint: 172.16.0.170:9000
+  secret_key: yMHbGFngNM5OnuWFj5lUDBJozEjryGAPBeF34WuG
+  access_key: R8mQTw7uevt178G216KM
+  secure: False
+
+mongodb:
+  host: "172.16.0.170"
+  port: 27017
+  connect: False
+  database: "history"
+  collection: "raw"
+
 readConfig: true
 config:
   customer:
