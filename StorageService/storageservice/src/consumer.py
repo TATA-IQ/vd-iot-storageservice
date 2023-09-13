@@ -77,7 +77,7 @@ class RawTopicConsumer():
         return raw_image, process_image, incident_event, usecase_inform
     
     def runConsumer(self):
-        print(f"==={self.camera_id} Message Parse Connected for Topic {self.topic}====")
+        print(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
         self.check=True
         
         self.log.info(f"Starting Message Parsing {self.camera_id} for {self.topic}")
@@ -91,5 +91,5 @@ class RawTopicConsumer():
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
             minio_obj = MinioSave(self.minioclient, raw_image, process_image, incident_event)
             minio_saved_paths = minio_obj.save_raw_processed_image()
-            mongo_obj = MongoDBSave(self.mongoclient, incident_event, minio_saved_paths)
+            mongo_obj = MongoDBSave(self.mongoclient, incident_event)
             mongo_obj.save_mongodata()

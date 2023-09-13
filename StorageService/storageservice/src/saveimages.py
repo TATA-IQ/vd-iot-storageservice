@@ -30,18 +30,21 @@ class MinioSave:
         self.camera_id = dataconfig['hierarchy']['camera_id']
         self.subsite_id = dataconfig['hierarchy']['subsite_id']
         self.location_id = dataconfig['hierarchy']['location_id']
-        self.zone_name = dataconfig['hierarchy']['zone']
+        self.zone_id = dataconfig['hierarchy']['zone_id']
         self.usecase_id = dataconfig['usecase']['id']
         self.image_time = dataconfig['time']['incident_time']
 
-        self.image_date = self.image_time[:10]
-        self.customer_name = "customer-" + str(self.customer_id)
-        self.subsite_name = "subsite-" + str(self.subsite_id)
-        self.location_name = "location-" + str(self.location_id)
-        self.usecase_name = "usecase-" + str(self.usecase_id)
-        self.camera_name = "camera-" + str(self.camera_id)
+        # self.image_date = self.image_time[:10]
+        self.image_date = datetime.utcnow().strftime("%Y%m%d")
+        self.customer_name = "customer" + str(self.customer_id).zfill(5)
+        self.subsite_name = "subsite" + str(self.subsite_id).zfill(5)
+        self.location_name = "location" + str(self.location_id).zfill(5)
+        self.usecase_name = "usecase" + str(self.usecase_id).zfill(5)
+        self.camera_name = "camera" + str(self.camera_id).zfill(5)
+        self.zone_name = "zone" + str(self.zone_id).zfill(5)
 
-        self.bucket_name = self.customer_name
+        # self.bucket_name = self.customer_name
+        self.bucket_name = "images"
         if not self.client.bucket_exists(self.bucket_name):
             self.client.make_bucket(self.bucket_name)
             print(f"Bucket {self.bucket_name} created")
@@ -56,10 +59,11 @@ class MinioSave:
             print(f"Bucket {self.bucket_name} already exists")
 
     def rawimage_path(self):
-        return self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" 
+        return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" 
 
     def processedimage_path(self):
-        return self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/"
+        return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/"
+
 
 
     def save_raw_processed_image(self,):
@@ -86,27 +90,46 @@ class MinioSave:
         return [complete_raw_path,complete_processed_path]
         
 class MongoDBSave:
-    def __init__(self, mongodbclient, process_config, saved_path):
+    def __init__(self, mongodbclient, dataconfig):
         self.mongoclient = mongodbclient
-        self.process_config = process_config
-        self.databasename = database
-        self.tablename = tablename
-        self.rawimage_path = saved_path[0]
-        self.processedimage_path = saved_path[1]
+        self.dataconfig = dataconfig
+        # self.rawimage_path = saved_path[0]
+        # self.processedimage_path = saved_path[1]
+        self.image_name = dataconfig['image']['name']
+        self.customer_id = dataconfig['hierarchy']['customer_id']
+        self.camera_id = dataconfig['hierarchy']['camera_id']
+        self.subsite_id = dataconfig['hierarchy']['subsite_id']
+        self.location_id = dataconfig['hierarchy']['location_id']
+        self.zone_id = dataconfig['hierarchy']['zone_id']
+        self.usecase_id = dataconfig['usecase']['id']
+        self.image_time = dataconfig['time']['incident_time']
 
-    # def rawimage_path(self):
-    #     return self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" + self.image_name
+        # self.image_date = self.image_time[:10]
+        self.image_date = datetime.utcnow().strftime("%Y%m%d")
+        self.customer_name = "customer" + str(self.customer_id).zfill(5)
+        self.subsite_name = "subsite" + str(self.subsite_id).zfill(5)
+        self.location_name = "location" + str(self.location_id).zfill(5)
+        self.usecase_name = "usecase" + str(self.usecase_id).zfill(5)
+        self.camera_name = "camera" + str(self.camera_id).zfill(5)
+        self.zone_name = "zone" + str(self.zone_id).zfill(5)
 
-    # def processedimage_path(self,):
-    #     return self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/" + self.image_name
+        # self.bucket_name = self.customer_name
+        self.bucket_name = "images"
+
+    def rawimage_path(self):
+        return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" 
+
+    def processedimage_path(self):
+        return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/"
+
 
     def save_mongodata(self,):
-        self.process_config['documentId'] = str(uuid.uuid4())
-        self.process_config['image']['storage']['raw'] = self.rawimage_path
-        self.process_config['image']['storage']['processed'] = self.processedimage_path
-        print(self.rawimage_path)
-        print(self.processedimage_path)
-        self.mongoclient.insert_one(self.process_config)
+        self.dataconfig['documentId'] = str(uuid.uuid4())
+        self.dataconfig['image']['storage']['raw'] = self.bucket_name +"/" + self.rawimage_path()
+        self.dataconfig['image']['storage']['processed'] = self.bucket_name +"/"+ self.processedimage_path()
+        print(self.bucket_name +"/" +self.rawimage_path())
+        print(self.bucket_name +"/" +self.processedimage_path())
+        self.mongoclient.insert_one(self.dataconfig)
         print(f"data inserted into {self.mongoclient}")
 
     
