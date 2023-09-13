@@ -89,7 +89,14 @@ class RawTopicConsumer():
             print("===Running=====")
             #print("*****Running Consumer****")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
-            minio_obj = MinioSave(self.minioclient, raw_image, process_image, incident_event)
-            minio_saved_paths = minio_obj.save_raw_processed_image()
-            mongo_obj = MongoDBSave(self.mongoclient, incident_event)
-            mongo_obj.save_mongodata()
+            try:
+                mongo_obj = MongoDBSave(self.mongoclient, incident_event)
+                mongo_obj.save_mongodata()
+            except Exception as e:
+                print(e)
+            try:
+                minio_obj = MinioSave(self.minioclient, raw_image, process_image, incident_event)
+                minio_saved_paths = minio_obj.save_raw_processed_image()
+            except Exception as e:
+                print(e)
+            
