@@ -57,6 +57,12 @@ class MinioSave:
             self.client.make_bucket(self.bucket_name)
         else:
             print(f"Bucket {self.bucket_name} already exists")
+            
+    def createsavepaths(self):
+        rawpath = self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" 
+        processpath = self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/"
+        return [rawpath,processpath]
+
 
     def rawimage_path(self):
         return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name + "/" + self.image_date  + "/raw/" 
@@ -64,6 +70,11 @@ class MinioSave:
     def processedimage_path(self):
         return self.customer_name + "/" + self.location_name + "/" + self.subsite_name + "/" + self.zone_name + "/" + self.camera_name  + "/" + self.image_date  + "/processed/"  + self.usecase_name + "/"
 
+    def update_dataconfig(self):
+        self.dataconfig['documentId'] = str(uuid.uuid4())
+        self.dataconfig['image']['storage']['raw'] = self.bucket_name +"/" + self.rawimage_path()
+        self.dataconfig['image']['storage']['processed'] = self.bucket_name +"/"+ self.processedimage_path()
+        return self.dataconfig
 
 
     def save_raw_processed_image(self,):
@@ -125,10 +136,10 @@ class MongoDBSave:
 
     def save_mongodata(self,):
         self.dataconfig['documentId'] = str(uuid.uuid4())
-        self.dataconfig['image']['storage']['raw'] = self.bucket_name +"/" + self.rawimage_path()
-        self.dataconfig['image']['storage']['processed'] = self.bucket_name +"/"+ self.processedimage_path()
-        print(self.bucket_name +"/" +self.rawimage_path())
-        print(self.bucket_name +"/" +self.processedimage_path())
+        self.dataconfig['image']['storage']['raw'] = self.bucket_name+"/"+self.rawimage_path()+self.image_name
+        self.dataconfig['image']['storage']['processed'] = self.bucket_name+"/"+self.processedimage_path()+self.image_name
+        print(self.bucket_name +"/"+self.rawimage_path()+self.image_name)
+        print(self.bucket_name +"/"+self.processedimage_path()+self.image_name)
         self.mongoclient.insert_one(self.dataconfig)
         print(f"data inserted into {self.mongoclient}")
 

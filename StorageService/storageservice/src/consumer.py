@@ -16,7 +16,8 @@ from shared_memory_dict import SharedMemoryDict
 from PIL import Image
 from io import BytesIO
 from src.createclient import CreateClient
-from src.saveimages import MinioSave, MongoDBSave
+from src.storeimages import StorageClass, MinioStorage, MongoStorage
+# from src.saveimages import MinioSave, MongoDBSave
 
 os.environ["SHARED_MEMORY_USE_LOCK"]="1"
 
@@ -66,37 +67,71 @@ class RawTopicConsumer():
     def isConnected(self):
         #print("====Check Self Consumer====",self.consumer)
         return self.consumer.bootstrap_connected()
+
+    def convert_image(self,image_str):
+        stream = BytesIO(image_str.encode("ISO-8859-1"))
+        image = Image.open(stream).convert("RGB")
+        imagearr=np.array(image)
+        return imagearr
+
     def messageParser(self,msg):
         #msg=ast.literal_eval(msg)
         msg=json.loads(msg.value)
-        raw_image = msg['raw_image']
-        process_image = msg['process_image']
+        try:
+            raw_image_str = msg['raw_image']
+            raw_image = self.convert_image(raw_image_str)
+        except:
+            raw_image_str = None
+        process_image_str = msg['processed_image']
+        process_image = self.convert_image(process_image_str)
+
         incident_event = msg['incident_event']
-        usecase_inform = msg['usecase_inform']
+        usecase_inform = msg['usecase']
         #your message parser code
         return raw_image, process_image, incident_event, usecase_inform
+
+    # def minio_thread(minio_queue):
+    #     try:
+    #         minio_client, raw_img, processed_img, incident_event = minio_queue.get()
+    #         minio_obj = MinioSave(minio_client, raw_img, processed_img, incident_event)
+    #         minio_saved_paths = minio_obj.save_raw_processed_image()
+    #     except Exception as e:
+    #         print(e)
+
+    # def mongo_thread(mongo_queue):
+    #     try:
+    #         mongo_client, incident_event = mongo_queue.get()
+    #         mongo_obj = MongoDBSave(mongo_client, incident_event)
+    #         mongo_obj.save_mongodata()
+    #     except Exception as e:
+    #         print(e)
     
     def runConsumer(self):
         print(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
         self.check=True
         
         self.log.info(f"Starting Message Parsing {self.camera_id} for {self.topic}")
-        # print("#"*100)
-        # print(self.minioclient)
-        # while True:
-        #     print(self.consumer)
         for message in self.consumer:
-            print("===Running=====")
+            print("====Running=====")
             #print("*****Running Consumer****")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
-            try:
-                mongo_obj = MongoDBSave(self.mongoclient, incident_event)
-                mongo_obj.save_mongodata()
-            except Exception as e:
-                print(e)
-            try:
-                minio_obj = MinioSave(self.minioclient, raw_image, process_image, incident_event)
-                minio_saved_paths = minio_obj.save_raw_processed_image()
-            except Exception as e:
-                print(e)
+            bucketname = "images"
+            storageobj = StorageClass(incident_event,bucketname)
+            final_incident_event = storageobj.update_dataconfig()
+            # print(final_incident_event)
+
+            minio_queue = Queue()
+            mongo_queue = Queue()
+
+            minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event])
+            mongo_queue.put([self.mongoclient, final_incident_event])
+
+            with ThreadPoolExecutor(max_workers=20) as executor:
+                minio_future = executor.submit(MinioStorage.save_miniodata, minio_queue)
+                mongo_future = executor.submit(MongoStorage.save_mongodata, mongo_queue)
+
+                minio_result = minio_future.result()
+                mongo_result = mongo_future.result() 
+                
+
             

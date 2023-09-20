@@ -9,9 +9,9 @@ kafka:
   - 172.16.0.174:9092
 
 minio:
-  endpoint: 172.16.0.170:9000
-  secret_key: yMHbGFngNM5OnuWFj5lUDBJozEjryGAPBeF34WuG
-  access_key: R8mQTw7uevt178G216KM
+  endpoint: 172.16.0.178:9000
+  secret_key: TQGZo3fyub41hWBq2bWUujpc5QCjvnqKMccBBjPt
+  access_key: nMJ5zN5L5tn0Lehuw32h
   secure: False
 
 mongodb:
