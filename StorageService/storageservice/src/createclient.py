@@ -25,3 +25,13 @@ class CreateClient():
         collection  = database[self.mongodbconf['collection']]
 
         return collection
+
+    def mongo_backupclient(self):
+        mongo_client = MongoClient(host = self.mongodbconf['host'], 
+                                    port = self.mongodbconf['port'],
+                                    connect=self.mongodbconf['connect'])
+
+        database = mongo_client[self.mongodbconf['database']]
+        collection  = database[self.mongodbconf['backupcollection']]
+
+        return collection

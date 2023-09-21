@@ -13,6 +13,7 @@ import threading
 
 from minio import Minio
 from minio.error import S3Error
+from src.storefailedimages import Minio_fail
 
 
 class StorageClass:
@@ -34,7 +35,7 @@ class StorageClass:
         self.image_time = dataconfig['time']['incident_time']
 
         # self.image_date = self.image_time[:10]
-        self.image_date = datetime.utcnow().strftime("%Y%m%d")
+        # self.image_date = datetime.utcnow().strftime("%Y%m%d")
         self.image_date = "".join(dataconfig['time']['UTC_time'][:10].split("-"))
         self.customer_name = "customer" + str(self.customer_id).zfill(5)
         self.subsite_name = "subsite" + str(self.subsite_id).zfill(5)
@@ -67,7 +68,7 @@ class StorageClass:
 class MinioStorage:
     # def save_miniodata(client,raw_image,processed_image,dataconfig):
     def save_miniodata(minio_queue):
-        client,raw_image,processed_image,dataconfig = minio_queue.get()
+        client,raw_image,processed_image,dataconfig,mongobackup_client = minio_queue.get()
 
         try:
             complete_raw_path = dataconfig['image']['storage']['raw']
@@ -89,8 +90,10 @@ class MinioStorage:
             client.put_object(bucket_name, processed_path, processedimage_bytes, len(processedimage_val))
             print(f"Raw img saved at {bucket_name}/{raw_path}")
             print(f"Processed img at {bucket_name}/{processed_path}")
-        except S3Error as exc: 
-            print("error occurred.", exc)
+        except: 
+            minio_fail_obj = Minio_fail(raw_image,processed_image,dataconfig,mongobackup_client)
+            minio_fail_obj.minio_store()
+            print("error occurred.")
 
         complete_raw_path = bucket_name + "/" + raw_path
         complete_processed_path = bucket_name + "/" + processed_path 

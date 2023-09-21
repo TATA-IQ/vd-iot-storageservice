@@ -9,7 +9,7 @@ kafka:
   - 172.16.0.174:9092
 
 minio:
-  endpoint: 172.16.0.178:9000
+  endpoint: 172.16.0.179:9000
   secret_key: TQGZo3fyub41hWBq2bWUujpc5QCjvnqKMccBBjPt
   access_key: nMJ5zN5L5tn0Lehuw32h
   secure: False
@@ -19,27 +19,18 @@ mongodb:
   port: 27017
   connect: False
   database: "history"
-  collection: "raw"
+  collection: "incident"
+  backupcollection: "failed"
 
 readConfig: true
 config:
   customer:
     - 1
-    - 2
-    - 3
   zone:
     - 1
-    - 2
-    - 3
   subsite:
     - 1
-    - 2
-    - 3
   location:
     - 1
-    - 2 
-    - 3
   group:
-    - 1
-    - 2
     - 3

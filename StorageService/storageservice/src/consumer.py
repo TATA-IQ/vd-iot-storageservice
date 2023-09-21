@@ -60,6 +60,7 @@ class RawTopicConsumer():
         clientobj = CreateClient(self.config)
         self.minioclient = clientobj.minio_client()
         self.mongoclient = clientobj.mongo_client()
+        self.mongobackupclient = clientobj.mongo_backupclient()
         self.log.info(f"Connected Consumer {self.camera_id} for {self.topic}")
 
         return
@@ -87,24 +88,8 @@ class RawTopicConsumer():
 
         incident_event = msg['incident_event']
         usecase_inform = msg['usecase']
-        #your message parser code
         return raw_image, process_image, incident_event, usecase_inform
 
-    # def minio_thread(minio_queue):
-    #     try:
-    #         minio_client, raw_img, processed_img, incident_event = minio_queue.get()
-    #         minio_obj = MinioSave(minio_client, raw_img, processed_img, incident_event)
-    #         minio_saved_paths = minio_obj.save_raw_processed_image()
-    #     except Exception as e:
-    #         print(e)
-
-    # def mongo_thread(mongo_queue):
-    #     try:
-    #         mongo_client, incident_event = mongo_queue.get()
-    #         mongo_obj = MongoDBSave(mongo_client, incident_event)
-    #         mongo_obj.save_mongodata()
-    #     except Exception as e:
-    #         print(e)
     
     def runConsumer(self):
         print(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
@@ -123,7 +108,7 @@ class RawTopicConsumer():
             minio_queue = Queue()
             mongo_queue = Queue()
 
-            minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event])
+            minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event, self.mongobackupclient])
             mongo_queue.put([self.mongoclient, final_incident_event])
 
             with ThreadPoolExecutor(max_workers=20) as executor:
