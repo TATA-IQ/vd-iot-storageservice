@@ -111,6 +111,8 @@ class PoolConsumer():
                     self.log.info(f"Starting Conusmer for {cam_id}")
                     
                 else:
+                    topic_smd[cam_id]=topicdata[cam]
+                    self.log.info(f"Updating Data for {cam_id}")
                     #print(futuredict)
                     # print("=====else===",cam_id)
                     # print(futuredict[cam_id].done())
@@ -127,6 +129,7 @@ class PoolConsumer():
                         #listapp.append(future1)
                         futuredict[cam_id]=future1
                         self.log.info(f"Starting New Conusmer for {cam_id}")
+
                     else:
                         #print("Updating===>",cam_id)
                         #preproceesdata=self.getScheduleState(scheduledata,camdata[cam])
