@@ -18,10 +18,10 @@ from src.storefailedimages import Minio_fail
 
 class StorageClass:
     def __init__(self, dataconfig, bucket_name):
-        self.dataconfig=dataconfig
+        self.dataconfig = dataconfig
         self.bucket_name = bucket_name
-        print("%"*100)
-        print(dataconfig)
+        # print("%"*100)
+        # print(dataconfig)
         try:
             self.image_name = dataconfig['image']['name']
         except:
@@ -33,7 +33,10 @@ class StorageClass:
         self.zone_id = dataconfig['hierarchy']['zone_id']
         self.usecase_id = dataconfig['usecase']['id']
         self.image_time = dataconfig['time']['incident_time']
-
+        # try:
+        #     print("timestamp== ",dataconfig['time']['timestamp'])
+        # except Exception as e:
+        #     print(e)
         # self.image_date = self.image_time[:10]
         # self.image_date = datetime.utcnow().strftime("%Y%m%d")
         self.image_date = "".join(dataconfig['time']['UTC_time'][:10].split("-"))
@@ -66,9 +69,9 @@ class StorageClass:
         return self.dataconfig
 
 class MinioStorage:
-    # def save_miniodata(client,raw_image,processed_image,dataconfig):
-    def save_miniodata(minio_queue):
-        client,raw_image,processed_image,dataconfig,mongobackup_client = minio_queue.get()
+    def save_miniodata(client,raw_image,processed_image,dataconfig,mongobackup_client):
+    # def save_miniodata(minio_queue):
+        # client,raw_image,processed_image,dataconfig,mongobackup_client = minio_queue.get()
 
         try:
             complete_raw_path = dataconfig['image']['storage']['raw']
@@ -99,13 +102,23 @@ class MinioStorage:
         complete_processed_path = bucket_name + "/" + processed_path 
 
 class MongoStorage:
-    # def save_mongodata(mongoclient,dataconfig):
-    def save_mongodata(mongo_queue):
-        mongoclient,dataconfig = mongo_queue.get()
+    def save_mongodata(mongoclient,dataconfig,mongo_reportsclient):
+    # def save_mongodata(mongo_queue):
+        # mongoclient,dataconfig = mongo_queue.get()
         # print(dataconfig['image']['storage']['raw'])
         # print(dataconfig['image']['storage']['processed'] )
         mongoclient.insert_one(dataconfig)
-        print(f"data inserted into {mongoclient}")       
+        print(f"data inserted into {mongoclient}") 
+
+        reportkeys = ['documentId','usecase','image','hierarchy','time']    
+
+        print("incident count: ",dataconfig["incident_count"])
+        if dataconfig["incident_count"]>0:
+            print("saving in reports mongodb")
+            reportsdict = dict(zip(reportkeys, [dataconfig[k] for k in reportkeys]))
+            mongo_reportsclient.insert_one(reportsdict)
+        else:
+            print("no incidents")
 
     
 
