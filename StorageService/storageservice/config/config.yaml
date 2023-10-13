@@ -10,8 +10,8 @@ kafka:
 
 minio:
   endpoint: 172.16.0.178:9000
-  secret_key: TQGZo3fyub41hWBq2bWUujpc5QCjvnqKMccBBjPt
-  access_key: nMJ5zN5L5tn0Lehuw32h
+  secret_key: ktIanRWzFYLkxuKV52uHn8t2K9xhsczfS74RUKUX
+  access_key: 6uYsllVhmjkWALUCR5uD
   secure: False
 
 mongodb:
@@ -19,9 +19,9 @@ mongodb:
   port: 27017
   connect: False
   database: "history"
-  collection: "incidents1"
+  collection: "incidents"
   backupcollection: "failed"
-  reportscollection: "reports1"
+  reportscollection: "reports"
 
 readConfig: true
 config:
