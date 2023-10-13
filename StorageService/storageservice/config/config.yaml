@@ -19,9 +19,9 @@ mongodb:
   port: 27017
   connect: False
   database: "history"
-  collection: "incidents"
+  collection: "incidents1"
   backupcollection: "failed"
-  reportscollection: "reports"
+  reportscollection: "reports1"
 
 readConfig: true
 config:

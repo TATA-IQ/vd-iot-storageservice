@@ -24,7 +24,7 @@ def testFuture(obj):
     # with ThreadPoolExecutor(max_workers=2) as executor:
     #     executor.submit(obj.runConsumer)
     #     executor.submit(obj.saveData)
-    obj.runConsumer()
+    obj.data_store()
     # # obj.saveData()
 
     #obj.callConsumer()

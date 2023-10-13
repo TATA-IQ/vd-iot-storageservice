@@ -86,7 +86,7 @@ class RawTopicConsumer():
         self.log.info(f"Connected Consumer {self.camera_id} for {self.topic}")
         
 
-        return
+        
         
     def isConnected(self):
         #print("====Check Self Consumer====",self.consumer)
@@ -106,7 +106,7 @@ class RawTopicConsumer():
                     imgarr = np.frombuffer(imgarr, dtype=np.uint8)
                     return cv2.imdecode(imgarr, cv2.IMREAD_COLOR)
             except Exception as e:
-                print(e)
+                print("exception===>",e)
             return None
 
 
@@ -144,15 +144,24 @@ class RawTopicConsumer():
 
     def minio_thread(self,):
         print("in minio thread==========")
+        count=0
         while True:
             # print(self.minio_queue)
             print("========minio queue size before getting getting==========")
-            print("len of q",self.minio_queue.qsize())
-            print("values",self.minio_queue.get())
+            # print("len of q",self.minio_queue.qsize())
+            #print("values",self.minio_queue.get())
+            #print("len of q",self.minio_queue.qsize())
+
             if not self.minio_queue.empty():
                 print("minio queue is not empty")
-                client,raw_image,processed_image,dataconfig,mongobackup_client = self.minio_queue.get()
-                MinioStorage.save_miniodata(client,raw_image,processed_image,dataconfig,mongobackup_client)
+                data = self.minio_queue.get()
+                print(data)
+                client,raw_image,processed_image,dataconfig,mongobackup_client=data
+                print(raw_image)
+                cv2.imwrite("image/"+str(count)+".jpg",raw_image)
+                print("#-"*100)
+                break
+                #MinioStorage.save_miniodata(client,raw_image,processed_image,dataconfig,mongobackup_client)
                 print(f"saved image in minio")
             else:
                 print("minio queue is empty")
@@ -168,31 +177,32 @@ class RawTopicConsumer():
                 print("mongo queue is not empty")
                 
                 mongoclient,dataconfig,mongoreportsclient = self.mongo_queue.get()
+                #print(dataconfig)
                 MongoStorage.save_mongodata(mongoclient,dataconfig,mongoreportsclient)
                 print(f"saved in mongo")
             else:
                 print("mongo queue is empty")
         
-    def saveData(self):
+    # def saveData(self):
         
-        print("=== saving the data in minio ===")
-        self.minio_thread()
-        print("=== saving the data in mongo ===")
-        self.mongo_thread()
-        # with ThreadPoolExecutor(max_workers=2) as executor:
-        #     print("Starting thread pool executors")
-        #     minio_future = executor.submit(self.minio_thread,)
-        #     mongo_future = executor.submit(self.mongo_thread,)
+    #     print("=== saving the data in minio ===")
+    #     self.minio_thread()
+    #     print("=== saving the data in mongo ===")
+    #     self.mongo_thread()
+    #     # with ThreadPoolExecutor(max_workers=2) as executor:
+    #     #     print("Starting thread pool executors")
+    #     #     minio_future = executor.submit(self.minio_thread,)
+    #     #     mongo_future = executor.submit(self.mongo_thread,)
         
     def data_store(self):
         # with ThreadPoolExecutor(max_workers=3) as executor:
         runConsumer_future = self.executor.submit(self.runConsumer)
-        # minio_future = self.executor.submit(self.minio_thread)
-        mongo_future = self.executor.submit(self.mongo_thread)
+        minio_future = self.executor.submit(self.minio_thread)
+        #mongo_future = self.executor.submit(self.mongo_thread)
         
         runConsumer_future.add_done_callback(future_callback_error_logger)
-        # minio_future.add_done_callback(future_callback_error_logger)
-        mongo_future.add_done_callback(future_callback_error_logger)
+        minio_future.add_done_callback(future_callback_error_logger)
+        #mongo_future.add_done_callback(future_callback_error_logger)
         
     
     def runConsumer(self):
@@ -213,22 +223,24 @@ class RawTopicConsumer():
             print("*****Running Consumer****")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
             bucketname = "images"
-            storageobj = StorageClass(incident_event,bucketname)
-            final_incident_event = storageobj.update_dataconfig()
+            # storageobj = StorageClass(incident_event,bucketname)
+            # final_incident_event = storageobj.update_dataconfig()
             # print("final_incident_event")
             # print(final_incident_event)
 
             # print("7"*100)
-            # minio_queue.put([minioclient, raw_image, process_image, final_incident_event, mongobackupclient])
+            #minio_queue.put([minioclient, raw_image, process_image, final_incident_event, mongobackupclient])
+            print("=====Image Pushed To the Q========")
             self.minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event, self.mongobackupclient])
             # print("========minio queue size before putting==========")
             # print(self.minio_queue.qsize())
             # mongo_queue.put([self.mongoclient, final_incident_event])
+        
             self.mongo_queue.put([self.mongoclient,final_incident_event, self.mongoreportsclient])
             # print("#"*100)
             print("inserted into queues")
-            self.minio_thread()
-            self.mongo_thread()
+            #self.minio_thread()
+            #self.mongo_thread()
             # # self.minio_thread(self.minio_queue)
             # # self.mongo_thread(self.mongo_queue)
             # # with ThreadPoolExecutor(max_workers=2) as executor:
