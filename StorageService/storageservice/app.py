@@ -23,6 +23,6 @@ if __name__ == "__main__":
         cg.checkState()
     except KeyboardInterrupt:
         print("=====Removing Shared Memory Refrence=====")
-        topic_smd_smd.shm.close()
-        
+        topic_smd.shm.close()
+        topic_smd.shm.unlink()     
         del topic_smd

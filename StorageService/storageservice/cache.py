@@ -1,5 +1,6 @@
+"""cache code"""
 from src.parser import Config
-from caching.rediscaching import Caching 
+from caching.rediscaching import Caching
 
 path="config/config.yaml"
 configdata=Config.yamlconfig(path)[0]
@@ -29,7 +30,3 @@ if configdata:
 
 cs = Caching(api,camera_group,customer,location,subsite)
 cs.persistData()
-    
-    
-
- 

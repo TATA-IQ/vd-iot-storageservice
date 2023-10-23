@@ -1,22 +1,22 @@
-from kafka import KafkaConsumer
-from concurrent.futures import ThreadPoolExecutor
-import multiprocessing as mp
+""" consumer code"""
+import os
 import cv2
 import numpy as np
 import json
 import base64
 import threading
 import uuid
-import redis
 import time
 from datetime import datetime
-import os
 import ast
 from queue import Queue
-from kafka import TopicPartition
+from concurrent.futures import ThreadPoolExecutor
+import multiprocessing as mp
+from io import BytesIO
+from kafka import KafkaConsumer, TopicPartition
 from shared_memory_dict import SharedMemoryDict
 from PIL import Image
-from io import BytesIO
+
 from src.parser import Config
 from src.createclient import CreateClient
 from src.storeimages import StorageClass, MinioStorage, MongoStorage
@@ -40,6 +40,15 @@ def future_callback_error_logger(future):
     print("*****", e)
 
 class RawTopicConsumer():
+    """
+    This class represents a Kafka consumer for processing raw image data.
+
+    Args:
+        kafkashost (str): The Kafka server's host address.
+        cameraid (str): The ID of the camera.
+        config (dict): A dictionary containing configuration data.
+        logger: A logger for logging messages
+    """
     def __init__(self,kafkashost,cameraid,config,logger):
         self.kill=False
         self.camera_id=cameraid
@@ -56,12 +65,14 @@ class RawTopicConsumer():
 
         # print(self.config)
         # print(self.minioclient)
-        # print(self.mongoclient)
-        
+        # print(self.mongoclient)        
         self.topic=data["topic_name"]
         self.log.info(f"Starting for {self.camera_id} and topic {self.topic}")
         
     def closeConsumer(self):
+        """ 
+        Closes the Kafka consumer.
+        """
         if self.consumer:
             self.consumer.close()
             return True
@@ -69,6 +80,13 @@ class RawTopicConsumer():
             return False
     
     def connectConsumer(self):
+        """
+        Connects the Kafka consumer to the specified topic and initializes client objects.
+
+        Returns:
+            None
+
+        """
         
         #session_timeout_ms=10000,heartbeat_interval_ms=7000,
         self.queue=Queue(100)
@@ -90,11 +108,24 @@ class RawTopicConsumer():
         
         
     def isConnected(self):
+        """
+        checks if the Kafka consumer is connected or not.
+        """
         #print("====Check Self Consumer====",self.consumer)
         return self.consumer.bootstrap_connected()
 
     
     def convert_image(self,image_str):
+        """
+        Converts an string image to a NumPy array.
+
+        Args:
+            image_str (str): The image data encoded as a string.
+
+        Returns:
+            image (np.ndarray): Image in NumPy or None if fails.
+
+        """
         try:
             stream = BytesIO(image_str.encode("ISO-8859-1"))
             image = Image.open(stream).convert("RGB")
@@ -113,6 +144,16 @@ class RawTopicConsumer():
 
 
     def messageParser(self,msg):
+        """
+        Parses a JSON message and extracts raw image, processed image, incident event, and usecase information.
+
+        Args:
+            msg (json): The JSON message to be parsed.
+
+        Returns:
+            tuple (tuple): containing raw image, processed image, incident_event (dict), usecase_inform(dict)
+
+        """
         # print("== in msg parser ==")
         # msg=ast.literal_eval(msg)
         # print(msg.value)
@@ -144,6 +185,16 @@ class RawTopicConsumer():
     
 
     def minio_thread(self):
+        """
+        Thread for processing and saving images in Minio storage.
+
+        It continuously checks the Minio queue for image data and, when available, retrieves the data and saves it
+        in Minio storage
+
+        Returns:
+            None
+
+        """
         print("in minio thread==========")
         count=0
         while True:
@@ -169,6 +220,17 @@ class RawTopicConsumer():
                 # print("minio queue is empty")
 
     def mongo_thread(self):
+        """
+        Thread for saving the storage details for incidents and reports in Mongo database.
+
+        It continuously checks the Mongo queue for data and, when available, retrieves the data and saves it
+        in incident and reports collection in Mongo database 
+
+        Returns:
+            None
+
+        """
+        
         print("in mongo thread==========")
         while True:
             # print("here")
@@ -198,6 +260,12 @@ class RawTopicConsumer():
     #     #     mongo_future = executor.submit(self.mongo_thread,)
         
     def data_store(self):
+        """
+        Starts the runConsumer, minio, and mongo threads using ThreadPoolExecutor.
+        Returns:
+            None
+
+        """
         # with ThreadPoolExecutor(max_workers=3) as executor:
         runConsumer_future = self.executor.submit(self.runConsumer)
         minio_future = self.executor.submit(self.minio_thread)
@@ -209,6 +277,16 @@ class RawTopicConsumer():
         
     
     def runConsumer(self):
+        """
+        Runs the Kafka consumer for processing messages and storing data.
+
+        It continuously processes messages from the Kafka topic, extracts data information and 
+        pushes data to the Minio and MongoDB queues for storage.
+
+        Returns:
+            None
+
+        """
         
         print(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
         self.check=True
@@ -224,8 +302,8 @@ class RawTopicConsumer():
             # self.minio_queue.put([1])
             print("*****Running Consumer****")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
-            bucketname = "images"
-            storageobj = StorageClass(incident_event,bucketname)
+            # bucketname = "images"
+            storageobj = StorageClass(incident_event)
             final_incident_event = storageobj.update_dataconfig()
             # print("final_incident_event")
             # print(process_image.shape, raw_image.shape,len(incident_event),usecase_inform)
@@ -233,7 +311,8 @@ class RawTopicConsumer():
             # print("7"*100)
             #minio_queue.put([minioclient, raw_image, process_image, final_incident_event, mongobackupclient])
             print("=====Image Pushed To the Q========")
-            self.minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event, self.mongobackupclient])
+            self.minio_queue.put([self.minioclient, raw_image, process_image, 
+                                  final_incident_event, self.mongobackupclient])
             # print("========minio queue size before putting==========")
             # print(self.minio_queue.qsize())
             # mongo_queue.put([self.mongoclient, final_incident_event])

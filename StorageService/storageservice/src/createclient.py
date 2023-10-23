@@ -3,6 +3,12 @@ from minio.error import S3Error
 from pymongo import MongoClient
 
 class CreateClient():
+    """
+    This class is creates Minio and MongoDB client objects.
+
+    Args:
+        config (dict): A dictionary containing config data details for minio and mongo.
+    """
     def __init__(self,config):
         self.config=config
         self.minioconf = self.config['minio']
@@ -10,6 +16,13 @@ class CreateClient():
         # print(self.mongodbconf)
     
     def minio_client(self):
+        """
+        Creates and returns a Minio client object.
+
+        Returns:
+            Minio: A Minio client object for interacting with Minio storage.
+
+        """
         minio_client = Minio(endpoint=self.minioconf["endpoint"],
                     access_key=self.minioconf["access_key"],
                     secret_key=self.minioconf["secret_key"],
@@ -17,6 +30,13 @@ class CreateClient():
         return minio_client
     
     def mongo_client(self):
+        """
+        Creates and returns a MongoDB collection for the primary use case.
+
+        Returns:
+            mongocollection: A MongoDB collection object for the primary use case.
+
+        """
         mongo_client = MongoClient(host = self.mongodbconf['host'], 
                                     port = self.mongodbconf['port'],
                                     connect=self.mongodbconf['connect'])
@@ -27,6 +47,13 @@ class CreateClient():
         return collection
 
     def mongo_backupclient(self):
+        """
+        Creates and returns a MongoDB collection for backup.
+
+        Returns:
+            mongo_backup_colection: A MongoDB collection object for backup.
+
+        """
         mongo_client = MongoClient(host = self.mongodbconf['host'], 
                                     port = self.mongodbconf['port'],
                                     connect=self.mongodbconf['connect'])
@@ -37,7 +64,14 @@ class CreateClient():
         return collection
 
     def mongo_reportsclient(self):
-        mongo_client = MongoClient(host = self.mongodbconf['host'], 
+        """
+        Creates and returns a MongoDB collection for reports.
+
+        Returns:
+            mongo_reports_collection: A MongoDB collection object for reports.
+
+        """
+        mongo_client = MongoClient(host = self.mongodbconf['host'],
                                     port = self.mongodbconf['port'],
                                     connect=self.mongodbconf['connect'])
 

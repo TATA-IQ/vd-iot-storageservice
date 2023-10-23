@@ -2,6 +2,15 @@ import os
 import cv2
 
 class Minio_fail:
+    """
+    This class handles storing the failed Minio data and associated MongoDB backup.
+
+    Args:
+        raw_image (numpy.ndarray): Raw image data as a NumPy array to be saved.
+        process_image (numpy.ndarray): Processed image data as a NumPy array to be saved.
+        dataconfig (dict): A dictionary containing configuration data for storing the images.
+        mongobackup_client: A MongoDB collection for backup
+    """
     def __init__(self, raw_image, process_image, dataconfig,mongobackup_client):
         self.raw_image = raw_image
         self.process_image = process_image
@@ -9,6 +18,13 @@ class Minio_fail:
         self.mongobackup_client = mongobackup_client
     
     def minio_store(self,):
+        """
+        Saves raw and processed image data locally and inserts dataconfig into MongoDB backup.
+
+        Returns:
+            None
+
+        """
         try:
             complete_raw_path = self.dataconfig['image']['storage']['raw']
             complete_process_path = self.dataconfig['image']['storage']['processed']

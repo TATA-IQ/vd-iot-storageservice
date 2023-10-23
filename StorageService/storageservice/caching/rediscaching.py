@@ -12,8 +12,6 @@ class Caching:
     And always listens for the event changes in kafka.
     If any event is encountered it will update the caching.
     """
-    
-
     def __init__(
         self,
         api: dict,
