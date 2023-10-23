@@ -87,7 +87,7 @@ class PoolConsumer():
         statusdict=manager.dict()
         futuredict={}
         #statusdict={}
-        executor = ProcessPoolExecutor(50)
+        executor = ProcessPoolExecutor(20)
         listapp=[]
         while True:
             topicdata=json.loads(self.r.get("topics"))
