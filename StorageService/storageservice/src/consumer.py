@@ -37,7 +37,7 @@ manager=mp.Manager()
 
 def future_callback_error_logger(future):
     e = future.exception()
-    print("*****", e)
+    print("Thread pool exception====>", e)
 
 class RawTopicConsumer():
     """
@@ -78,6 +78,9 @@ class RawTopicConsumer():
             return True
         else:
             return False
+    def loop(self):
+        while True:
+            pass
     
     def connectConsumer(self):
         """
@@ -89,20 +92,27 @@ class RawTopicConsumer():
         """
         
         #session_timeout_ms=10000,heartbeat_interval_ms=7000,
-        self.queue=Queue(100)
+        #self.queue=Queue(100)
+        print("==========creatinfg consumer======")
         self.consumer=KafkaConsumer("out_"+self.topic, bootstrap_servers=self.kafkahost, auto_offset_reset="latest",
                                  value_deserializer=lambda m: json.loads(m.decode('utf-8')),group_id=self.topic)
         #self.consumer.assign([TopicPartition(self.topic, 1)])
         clientobj = CreateClient(self.config)
         # self.manager=mp.Manager()
+        print("====creating q")
         self.minio_queue = Queue()
         self.mongo_queue = Queue()
+        print("====creatin client======")
         self.minioclient = clientobj.minio_client()
         self.mongoclient = clientobj.mongo_client()
+        print("========creatin backup client=======")
         self.mongobackupclient = clientobj.mongo_backupclient()
         self.mongoreportsclient = clientobj.mongo_reportsclient()
+        print("====creating exectour")
         self.executor= ThreadPoolExecutor(max_workers=3)
+        print("======executor created=========")
         self.log.info(f"Connected Consumer {self.camera_id} for {self.topic}")
+        print("==logger====",self.log)
         
 
         
@@ -157,7 +167,12 @@ class RawTopicConsumer():
         # print("== in msg parser ==")
         # msg=ast.literal_eval(msg)
         # print(msg.value)
-        msg=json.loads(msg.value)
+        #print(msg)
+        print(type(msg))
+        try:
+            msg=json.loads(msg.value)
+        except:
+            print(msg)
         # msg = msg.value
         # try:
         #     msg=json.loads(msg.value)
@@ -208,11 +223,13 @@ class RawTopicConsumer():
                 # print("minio queue is not empty")
                 data = self.minio_queue.get()
                 # print(data)
+                print("===got data===")
                 client,raw_image,processed_image,dataconfig,mongobackup_client=data
                 # print(raw_image)
                 # cv2.imwrite("/home/sridhar.bondla10/gitdev_v2/vd-iot-storageservice/StorageService/storageservice/image/"+str(uuid.uuid4())+".jpg",raw_image)
                 # print("#-"*100)
                 # break
+                print("====savig data====")
                 MinioStorage.save_miniodata(client,raw_image,processed_image,dataconfig,mongobackup_client)
                 print("saved image in minio")
             else:
@@ -274,6 +291,7 @@ class RawTopicConsumer():
         runConsumer_future.add_done_callback(future_callback_error_logger)
         minio_future.add_done_callback(future_callback_error_logger)
         mongo_future.add_done_callback(future_callback_error_logger)
+        return minio_future, mongo_future
         
     
     def runConsumer(self):
@@ -301,7 +319,9 @@ class RawTopicConsumer():
             
             # self.minio_queue.put([1])
             print("*****Running Consumer****")
+            print("====message parsing====")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
+            print("===parsing done====")
             # bucketname = "images"
             storageobj = StorageClass(incident_event)
             final_incident_event = storageobj.update_dataconfig()

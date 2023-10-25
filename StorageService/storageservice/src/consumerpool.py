@@ -15,19 +15,36 @@ from src.createclient import CreateClient
 topic_smd = SharedMemoryDict(name='topics', size=10000000)
 
 def testcallbackFuture(future):
+    if not future.running():
+        print("===>",future)
+    print("=======result====")
+    print(future.result())
     print("=======callback future====",future.exception())
 
 
 def testFuture(obj):
+    #obj.loop()
+
+    
     obj.connectConsumer()
+    minio_future, mongo_future=obj.data_store()
+    while True:
+        # if not minio_future.running() or not mongo_future.running():
+        #     minio_future.add_done_callback(testcallbackFuture)
+        #     mongo_future.add_done_callback(testcallbackFuture)
+
+            pass
+        #print("======eception because of minio and mongo=====")
+    
     # obj.data_store()
     # with ThreadPoolExecutor(max_workers=2) as executor:
     #     executor.submit(obj.runConsumer)
     #     executor.submit(obj.saveData)
-    obj.data_store()
+    #o
     # # obj.saveData()
 
     #obj.callConsumer()
+    print("=====created and connected=====")
 
 
 class PoolConsumer():
@@ -87,7 +104,7 @@ class PoolConsumer():
         statusdict=manager.dict()
         futuredict={}
         #statusdict={}
-        executor = ProcessPoolExecutor(20)
+        executor = ProcessPoolExecutor(10)
         listapp=[]
         while True:
             topicdata=json.loads(self.r.get("topics"))
@@ -102,6 +119,7 @@ class PoolConsumer():
                 cam_id=topicdata[cam]["camera_id"]
                 
                 # if cam_id<50:
+                print("======cam id=====",cam_id)
                 if cam_id not in statusdict:
                     #print("*********",preproceesdata)
                     topic_smd[cam_id]=topicdata[cam]
@@ -109,11 +127,16 @@ class PoolConsumer():
                     # self.minioclient = clientobj.minio_client()
                     # self.mongoclient = clientobj.mongo_client()
                     obj = RawTopicConsumer(self.kafkahost,cam_id,self.config,self.log)
+                    print("=====Topic Consumer created====")
                     statusdict[cam_id]=obj
+                    print("=====obj=====")
                     future1=executor.submit(testFuture,obj)
+                    print("===========callback====",future1)
                     future1.add_done_callback(testcallbackFuture)
                     #listapp.append(future1)
                     futuredict[cam_id]=future1
+                    print("====futuredict====")
+                    print(futuredict)
                     self.log.info(f"Starting Conusmer for {cam_id}")
                     
                 else:
@@ -133,6 +156,7 @@ class PoolConsumer():
                         print("Starting consumer else====",cam_id)
                         future1=executor.submit(testFuture,obj)
                         #listapp.append(future1)
+                        print("======future====",future1)
                         futuredict[cam_id]=future1
                         self.log.info(f"Starting New Conusmer for {cam_id}")
 

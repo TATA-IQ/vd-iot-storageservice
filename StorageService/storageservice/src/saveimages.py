@@ -31,7 +31,7 @@ class MinioSave:
         self.subsite_id = dataconfig['hierarchy']['subsite_id']
         self.location_id = dataconfig['hierarchy']['location_id']
         self.zone_id = dataconfig['hierarchy']['zone_id']
-        self.usecase_id = dataconfig['usecase']['id']
+        self.usecase_id = dataconfig['usecase']['usecase_id']
         self.image_time = dataconfig['time']['incident_time']
 
         # self.image_date = self.image_time[:10]
@@ -112,7 +112,7 @@ class MongoDBSave:
         self.subsite_id = dataconfig['hierarchy']['subsite_id']
         self.location_id = dataconfig['hierarchy']['location_id']
         self.zone_id = dataconfig['hierarchy']['zone_id']
-        self.usecase_id = dataconfig['usecase']['id']
+        self.usecase_id = dataconfig['usecase']['usecase_id']
         self.image_time = dataconfig['time']['incident_time']
 
         # self.image_date = self.image_time[:10]

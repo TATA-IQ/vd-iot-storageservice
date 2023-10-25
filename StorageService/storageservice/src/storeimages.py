@@ -40,7 +40,7 @@ class StorageClass:
         self.subsite_id = dataconfig['hierarchy']['subsite_id']
         self.location_id = dataconfig['hierarchy']['location_id']
         self.zone_id = dataconfig['hierarchy']['zone_id']
-        self.usecase_id = dataconfig['usecase']['id']
+        self.usecase_id = dataconfig['usecase']['usecase_id']
         self.image_time = dataconfig['time']['incident_time']
         # try:
         #     print("timestamp== ",dataconfig['time']['timestamp'])
