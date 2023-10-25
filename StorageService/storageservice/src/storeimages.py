@@ -184,7 +184,7 @@ class MongoStorage:
         mongoclient.insert_one(dataconfig)
         print(f"data inserted into {mongoclient}") 
 
-        reportkeys = ['documentId','usecase','image','hierarchy','time','incident']    
+        reportkeys = ['documentId','usecase','image','hierarchy','time']    
 
         print("incident count: ",dataconfig["incident_count"])
         if dataconfig["incident_count"]>0:
