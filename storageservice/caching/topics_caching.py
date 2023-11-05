@@ -1,5 +1,7 @@
 import requests
-class PersistTopic():
+
+
+class PersistTopic:
     """
     This Class fetch all the data related to scheduling
     """
@@ -28,18 +30,16 @@ class PersistTopic():
             topicdata = resposnse.json()["data"]
         return topicdata
 
-
-    def persistData(self,jsonreq={}):
-        
-        data= self.apiCall(jsonreq)
+    def persistData(self, jsonreq={}):
+        data = self.apiCall(jsonreq)
         dictres = {}
 
         dictres["topic"] = {}
         tempdict = {}
         for dt in data:
             print(dt)
-            
+
             tempdict[dt["camera_id"]] = dt
         dictres["topic"] = tempdict
-        
+
         return tempdict, data

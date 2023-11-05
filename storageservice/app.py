@@ -2,11 +2,11 @@
 Code to start PreProcessing and Consumers
 """
 import os
+
 from shared_memory_dict import SharedMemoryDict
+from sourcelogs.logger import create_rotating_log
 from src.consumerpool import PoolConsumer
 from src.parser import Config
-from sourcelogs.logger import create_rotating_log
-
 
 os.environ["SHARED_MEMORY_USE_LOCK"] = "1"
 
@@ -24,5 +24,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("=====Removing Shared Memory Refrence=====")
         topic_smd.shm.close()
-        topic_smd.shm.unlink()     
+        topic_smd.shm.unlink()
         del topic_smd
