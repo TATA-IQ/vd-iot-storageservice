@@ -30,4 +30,8 @@ chmod +x run.sh
 ./run.sh
 
 # Docker 
-To-do: Docker Implementation
+1. Contenirization is enabled
+2. change the config.yaml
+3. Navigate to the Dockerfile level
+4. build the container (sudo docker build -t "postprocess")
+5. Run the container (sudo oocker run -t "postprocess")
