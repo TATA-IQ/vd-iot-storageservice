@@ -19,6 +19,7 @@ class PersistTopic:
             list: detail  data of requested query
         """
         cameraconfdata = []
+        topicdata=[]
         if data is None:
             print("None")
             resposnse = requests.get(self.url, json={}, timeout=50)
