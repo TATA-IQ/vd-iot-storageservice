@@ -108,7 +108,10 @@ class PoolConsumer:
         executor = ProcessPoolExecutor(10)
         listapp = []
         while True:
-            topicdata = json.loads(self.r.get("topics"))
+            try:
+                topicdata = json.loads(self.r.get("topics"))
+            except:
+                continue
 
             for cam in topicdata.keys():
                 # print("#####",camdata[cam])
