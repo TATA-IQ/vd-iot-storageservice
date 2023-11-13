@@ -105,7 +105,7 @@ class PoolConsumer:
                 topicdata = json.loads(self.r.get("topics"))
             except:
                 continue
-            camtoremove = self.removeCamera(topicdata.keys(), futuredict)
+            camtoremove = self.remove_topic(topicdata.keys(), futuredict)
             self.logger.info(f" These camera topics Have been Removed From Group {camtoremove}")
             for cam in camtoremove:
                 
