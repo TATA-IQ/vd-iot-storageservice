@@ -15,8 +15,8 @@ minio:
 
 mongodb:
   host: "172.31.26.109"
-  username: ""
-  password: ""
+  username: "application"
+  password: "application_pass_2023"
   port: 27017
   connect: False
   database: "history"
