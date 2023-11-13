@@ -106,13 +106,13 @@ class PoolConsumer:
             except:
                 continue
             camtoremove = self.remove_topic(topicdata.keys(), futuredict)
-            self.logger.info(f" These camera topics Have been Removed From Group {camtoremove}")
+            self.log.info(f" These camera topics Have been Removed From Group {camtoremove}")
             for cam in camtoremove:
                 
                 futuredict[cam].cancel()
                 del futuredict[cam]
                 del statusdict[cam]
-                self.logger.info(f"Killing camera {cam} topic")
+                self.log.info(f"Killing camera {cam} topic")
 
             for cam in topicdata.keys():
                 
