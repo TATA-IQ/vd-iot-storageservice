@@ -196,9 +196,10 @@ class MinioStorage:
         try:
             if not client.bucket_exists(bucket_name):
                 client.make_bucket(bucket_name)
-                print(f"Bucket {bucket_name} created")
+                #print(f"Bucket {bucket_name} created")
             else:
-                print(f"Bucket {bucket_name} already exists")
+                pass
+                #print(f"Bucket {bucket_name} already exists")
         except Exception as e:
             print("exception occured while created bucket",e)
 
@@ -210,8 +211,8 @@ class MinioStorage:
         try:
             client.put_object(bucket_name, raw_path, rawimage_bytes, len(rawimage_val))
             client.put_object(bucket_name, processed_path, processedimage_bytes, len(processedimage_val))
-            print(f"Raw img saved at {bucket_name}/{raw_path}")
-            print(f"Processed img at {bucket_name}/{processed_path}")
+            # print(f"Raw img saved at {bucket_name}/{raw_path}")
+            # print(f"Processed img at {bucket_name}/{processed_path}")
         except:
             minio_fail_obj = Minio_fail(raw_image, processed_image, dataconfig, mongobackup_client)
             minio_fail_obj.minio_store()

@@ -47,16 +47,18 @@ class MinioSave:
         self.bucket_name = "images"
         if not self.client.bucket_exists(self.bucket_name):
             self.client.make_bucket(self.bucket_name)
-            print(f"Bucket {self.bucket_name} created")
+            #print(f"Bucket {self.bucket_name} created")
         else:
-            print(f"Bucket {self.bucket_name} already exists")
+            pass
+            #print(f"Bucket {self.bucket_name} already exists")
 
     def create_bucket(self):
         self.bucket_name = self.customer_name
         if not self.client.bucket_exists(self.bucket_name):
             self.client.make_bucket(self.bucket_name)
         else:
-            print(f"Bucket {self.bucket_name} already exists")
+            pass
+            #print(f"Bucket {self.bucket_name} already exists")
 
     def createsavepaths(self):
         rawpath = (
@@ -225,7 +227,7 @@ class MongoDBSave:
         self.dataconfig["image"]["storage"]["processed"] = (
             self.bucket_name + "/" + self.processedimage_path() + self.image_name
         )
-        print(self.bucket_name + "/" + self.rawimage_path() + self.image_name)
-        print(self.bucket_name + "/" + self.processedimage_path() + self.image_name)
+        # print(self.bucket_name + "/" + self.rawimage_path() + self.image_name)
+        # print(self.bucket_name + "/" + self.processedimage_path() + self.image_name)
         self.mongoclient.insert_one(self.dataconfig)
         print(f"data inserted into {self.mongoclient}")

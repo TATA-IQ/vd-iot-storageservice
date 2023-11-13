@@ -168,11 +168,7 @@ class RawTopicConsumer:
             tuple (tuple): containing raw image, processed image, incident_event (dict), usecase_inform(dict)
 
         """
-        # print("== in msg parser ==")
-        # msg=ast.literal_eval(msg)
-        # print(msg.value)
-        # print(msg)
-        print(type(msg))
+        
         try:
             msg = json.loads(msg.value)
         except:
@@ -318,41 +314,24 @@ class RawTopicConsumer:
 
         for message in self.consumer:
             # self.minio_queue.put([1])
-            print("*****Running Consumer****")
-            print("====message parsing====")
+            # print("*****Running Consumer****")
+            # print("====message parsing====")
             raw_image, process_image, incident_event, usecase_inform = self.messageParser(message)
-            print("===parsing done====")
+            # print("===parsing done====")
             # bucketname = "images"
             storageobj = StorageClass(incident_event)
             final_incident_event = storageobj.update_dataconfig()
-            # print("final_incident_event")
-            # print(process_image.shape, raw_image.shape,len(incident_event),usecase_inform)
-
-            # print("7"*100)
-            # minio_queue.put([minioclient, raw_image, process_image, final_incident_event, mongobackupclient])
-            print("=====Image Pushed To the Q========")
             self.minio_queue.put(
                 [self.minioclient, raw_image, process_image, final_incident_event, self.mongobackupclient]
             )
-            # print("========minio queue size before putting==========")
-            # print(self.minio_queue.qsize())
-            # mongo_queue.put([self.mongoclient, final_incident_event])
-
+            
             self.mongo_queue.put([self.mongoclient, final_incident_event, self.mongoreportsclient])
-            # self.minio_thread()
-            # self.mongo_thread()
-            # # self.minio_thread(self.minio_queue)
-            # # self.mongo_thread(self.mongo_queue)
-            # # with ThreadPoolExecutor(max_workers=2) as executor:
-            # #     minio_future = executor.submit(self.minio_thread)
-            # #     mongo_future = executor.submit(self.mongo_thread)
+            try:
+                usecase_id=usecase_inform["usecase_id"]
+            except:
+                usecase_id=""
+            self.log.info(f"stored image for cameraid: {self.camera_id} and  usecaseid: {usecase_id}")
+            print(f"stored image for cameraid: {self.camera_id} and usecaseid: {usecase_id}")
+            
 
-            # # minio_queue.put([self.minioclient, raw_image, process_image, final_incident_event, self.mongobackupclient])
-            # # mongo_queue.put([self.mongoclient, final_incident_event])
-
-            # # with ThreadPoolExecutor(max_workers=20) as executor:
-            # #     minio_future = executor.submit(MinioStorage.save_miniodata, minio_queue)
-            # #     mongo_future = executor.submit(MongoStorage.save_mongodata, mongo_queue)
-
-            # #     minio_result = minio_future.result()
-            # #     mongo_result = mongo_future.result()
+            

@@ -1,20 +1,22 @@
 ---
 apis:
-  camera_group: "http://10.0.153.141:8000/getCameraGroup"
-  topics: "http://10.0.153.141:8000/gettopics"
+  camera_group: "http://172.16.0.204:8051/getCameraGroup"
+  topics: "http://172.16.0.204:8051/gettopics"
 
 kafka:
-  - 172.31.26.109:9092
+  - 172.16.0.175:9092
+  - 172.16.0.171:9092
+  - 172.16.0.174:9092
 event_topic:
   - app_events
 minio:
-  endpoint: 10.0.153.141:9000
-  secret_key: fz7x9AcpZqB7YY0VxgiQAYtC4RZVPSaumQycHPrP
-  access_key: BIVeLI5sayqshgRWSm5H
+  endpoint: 172.16.0.178:9000
+  secret_key: ktIanRWzFYLkxuKV52uHn8t2K9xhsczfS74RUKUX
+  access_key: 6uYsllVhmjkWALUCR5uD
   secure: False
 
 mongodb:
-  host: "172.31.26.109"
+  host: "172.16.0.204"
   port: 27017
   connect: False
   database: "history"
@@ -22,7 +24,7 @@ mongodb:
   backupcollection: "failed"
   reportscollection: "reports"
 
-readConfig: False
+readConfig: true
 config:
   customer:
     - 1
