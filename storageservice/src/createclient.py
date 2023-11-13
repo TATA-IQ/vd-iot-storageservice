@@ -46,7 +46,8 @@ class CreateClient:
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],
                 password=self.mongodbconf["password"],
-                connect=self.mongodbconf["connect"]
+                connect=self.mongodbconf["connect"],
+                authSource=self.mongodbconf["database"]
             )
             
         else:
@@ -73,7 +74,8 @@ class CreateClient:
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],
                 password=self.mongodbconf["password"],
-                connect=self.mongodbconf["connect"]
+                connect=self.mongodbconf["connect"],
+                authSource=self.mongodbconf["database"]
             )
             
         else:
@@ -100,7 +102,8 @@ class CreateClient:
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],
                 password=self.mongodbconf["password"],
-                connect=self.mongodbconf["connect"]
+                connect=self.mongodbconf["connect"],
+                authSource=self.mongodbconf["database"]
             )
             
         else:
