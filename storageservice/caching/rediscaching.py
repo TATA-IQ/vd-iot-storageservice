@@ -17,6 +17,7 @@ class Caching:
     def __init__(
         self,
         api: dict,
+        redis_server:dict,
         camera_group: list = None,
         customer: list = None,
         location: list = None,
@@ -32,7 +33,7 @@ class Caching:
             subsite: list of subsite id, by default is None
             camera_group: list of camera group, by default is None
         """
-        pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
+        pool = redis.ConnectionPool(host=redis_server["host"], port=redis_server["port"], db=0)
         self.r = redis.Redis(connection_pool=pool)
         print("customer", customer)
         print("location", location)

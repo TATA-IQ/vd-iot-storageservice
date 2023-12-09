@@ -41,7 +41,14 @@ class CreateClient:
             mongocollection: A MongoDB collection object for the primary use case.
 
         """
-        if self.mongodbconf['username'] and self.mongodbconf['password']:
+        if "username" not in self.mongodbconf or "password" not in self.mongodbconf :
+            mongo_client = MongoClient(
+            host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
+            connect=self.mongodbconf["connect"]
+        )
+
+
+        elif self.mongodbconf['username'] and self.mongodbconf['password']:
             mongo_client = MongoClient(
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],
@@ -69,7 +76,13 @@ class CreateClient:
             mongo_backup_colection: A MongoDB collection object for backup.
 
         """
-        if self.mongodbconf['username'] and self.mongodbconf['password']:
+        if "username" not in self.mongodbconf or "password" not in self.mongodbconf :
+            mongo_client = MongoClient(
+            host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
+            connect=self.mongodbconf["connect"]
+        )
+           
+        elif self.mongodbconf['username'] and self.mongodbconf['password']:
             mongo_client = MongoClient(
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],
@@ -97,7 +110,12 @@ class CreateClient:
             mongo_reports_collection: A MongoDB collection object for reports.
 
         """
-        if self.mongodbconf['username'] and self.mongodbconf['password']:
+        if "username" not in self.mongodbconf or "password" not in self.mongodbconf :
+            mongo_client = MongoClient(
+            host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
+            connect=self.mongodbconf["connect"]
+        )
+        elif self.mongodbconf['username'] and self.mongodbconf['password']:
             mongo_client = MongoClient(
                 host=self.mongodbconf["host"], port=self.mongodbconf["port"], 
                 username=self.mongodbconf["username"],

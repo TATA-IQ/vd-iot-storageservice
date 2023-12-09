@@ -39,15 +39,16 @@ def testFuture(obj):
     
 
 class PoolConsumer:
-    def __init__(self, data, logger):
+    def __init__(self, storageconf,dbconf,kafkaconf, logger):
         """
         Initialize the  Camera Group and connect with redis to take the recent configuration
         """
-        self.config = data
+        self.config = storageconf
         print("&" * 100)
         print(self.config)
-        self.kafkahost = data["kafka"]
-        pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
+        redis_server=storageconf["redis"]
+        self.kafkahost = kafkaconf["kafka"]
+        pool = redis.ConnectionPool(host=redis_server["host"], port=redis_server["port"], db=0)
         self.r = redis.Redis(connection_pool=pool)
         self.dict3 = {}
         self.log = logger
