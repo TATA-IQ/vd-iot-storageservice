@@ -1,23 +1,22 @@
-FROM python:3.9
+FROM python:3.9-slim-buster as builder
+RUN mkdir /app
+COPY poetry.lock pyproject.toml /app
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+RUN pip install poetry
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-dev --no-root
+
+FROM python:3.9-slim-buster    
+ENV PYTHONUNBUFFERED 1
+COPY --from=builder /app/venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 RUN apt-get update
 RUN apt-get install ffmpeg libsm6 libxext6  -y
 Run apt-get install redis -y
-RUN pip install mysql-connector-python
-RUN pip install pandas
-RUN pip install opencv-python
-RUN pip install requests
-RUN pip install imutils
-RUN pip install pyyaml
-RUN pip install scipy
-Run pip install numpy
-Run pip install minio
-Run pip install pymongo
-Run pip install pillow
-RUN pip install kafka-python==2.0.2
-Run pip install redis==4.6.0
-Run pip install shared-memory-dict==0.7.2
-RUN pip install protobuf==3.20.*
 copy storageservice/ /app
 WORKDIR /app
 CMD chmod +x run.sh
