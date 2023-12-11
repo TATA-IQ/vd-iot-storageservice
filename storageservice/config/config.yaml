@@ -1,1 +1,6 @@
-consul_url: "http://consul.service.consul:8500/v1/agent/services"
+
+
+consul:
+  host: 172.16.0.178
+  port: 8500
+  env: "dev"
