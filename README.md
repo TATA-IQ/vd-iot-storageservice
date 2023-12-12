@@ -1,20 +1,37 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+This is a storage repo. 
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+# How It Works
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+1. Check the config for customer id, subsite id, location id or camera group id
+2. Aggregate the camera group and get all the camera config and cache the data
+3. Read camera configuration from cache
+4. Start streaming for camera
+5. Check for the update in cache and update the camera configurations
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+# Architecture
+![Architectural Flow](storageservice/images/storage.png)
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+
+1. Each topic are executed on process pool for the faster image fetch
+2. Each task in process pool have threadpool, and each threadpool is running minio and mongo client to store data in mongo and mino
+
+# Dependency
+1. This Module is dependent on the https://tatacommiot@dev.azure.com/tatacommiot/Video%20Based%20IoT/_git/vd-iot-dataapiservice
+2. This module also needs kafka broker
+
+# Installation
+1. Install Python3.9 
+2. Install redis-server
+3. poetry install
+
+# Run App
+chmod +x run.sh
+./run.sh
+
+# Docker 
+1. Contenirization is enabled
+2. change the config.yaml
+3. Navigate to the Dockerfile level
+4. build the container (sudo docker build -t "postprocess")
+5. Run the container (sudo oocker run -t "postprocess")
