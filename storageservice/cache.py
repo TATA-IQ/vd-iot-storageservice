@@ -1,6 +1,8 @@
 """cache code"""
 from caching.rediscaching import Caching
 import requests
+import consul
+import time
 from src.parser import Config
 def get_service_address(consul_client,service_name,env):
     while True:
@@ -9,7 +11,7 @@ def get_service_address(consul_client,service_name,env):
             services=consul_client.catalog.service(service_name)[1]
             print(services)
             for i in services:
-                if env == i["ServiceID"].split("-")[:-1]:
+                if env == i["ServiceID"].split("-")[-1]:
                     return i
         except:
             time.sleep(10)
@@ -38,7 +40,7 @@ def get_confdata(consul_conf):
     
     while True:
         try:
-            res=requests.get(endpoint_addr+endpoints["endpoint"]["preprocess"])
+            res=requests.get(endpoint_addr+endpoints["endpoint"]["storage"])
             storageconf=res.json()
             print("storageconf===>",storageconf)
             break
