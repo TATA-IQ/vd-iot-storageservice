@@ -46,11 +46,12 @@ class Caching:
         self.subsite = subsite
         self.zone = zone
         self.api = api
-        self.topic = PersistTopic(self.api["topics"])
+        self.camera_id=None
+        self.topic = PersistTopic(self.api["kafka_by_camid"])
 
         # self.urllist=urllist
 
-    def getCamGroup(
+    def getCamId(
         self,
         customer: list = None,
         location: list = None,
@@ -74,7 +75,7 @@ class Caching:
             customer is None and location is None and subsite is None and camera_group is None and zone is None
         ):  # noqa: E501
             try:
-                r = requests.get(self.api["camera_group"], timeout=50)
+                r = requests.get(self.api["camera_id"], timeout=50)
                 try:
                     camgroup = r.json()["data"]
                 except Exception as ex:
@@ -85,7 +86,7 @@ class Caching:
 
         if customer is not None:
             try:
-                r = requests.get(self.api["camera_group"], json={"customer_id": customer}, timeout=50)  # noqa: E501
+                r = requests.get(self.api["camera_id"], json={"customer_id": customer}, timeout=50)  # noqa: E501
             
                 camgroup = r.json()["data"]
                 # print("===customer==",camgroup)
@@ -94,7 +95,7 @@ class Caching:
                 pass
         if location is not None:
             try:
-                r = requests.get(self.api["camera_group"], json={"location_id": location}, timeout=50)  # noqa: E501
+                r = requests.get(self.api["camera_id"], json={"location_id": location}, timeout=50)  # noqa: E501
             
                 if len(camgroup) > 0:
                     camgroup = camgroup + r.json()["data"]
@@ -104,7 +105,7 @@ class Caching:
                 pass
         if subsite is not None:
             try:
-                r = requests.get(self.api["camera_group"], json={"subsite_id": subsite}, timeout=50)  # noqa: E501
+                r = requests.get(self.api["camera_id"], json={"subsite_id": subsite}, timeout=50)  # noqa: E501
             
                 if len(camgroup) > 0:
                     camgroup = camgroup + r.json()["data"]
@@ -114,7 +115,7 @@ class Caching:
                 pass
         if zone is not None:
             try:
-                r = requests.get(self.api["camera_group"], json={"zone_id": zone}, timeout=50)  # noqa: E501
+                r = requests.get(self.api["camera_id"], json={"zone_id": zone}, timeout=50)  # noqa: E501
             
                 if len(camgroup) > 0:
                     camgroup = camgroup + r.json()["data"]
@@ -122,29 +123,39 @@ class Caching:
             except Exception as ex:
                 print("Zone data exception: ", ex)
                 pass
+        if camera_group is not None:
+            try:
+                r = requests.get(self.api["camera_id"], json={"camera_group_id": camera_group}, timeout=50)  # noqa: E501
+            
+                if len(camgroup) > 0:
+                    camgroup = camgroup + r.json()["data"]
+                    print("===Camera group Id==", camgroup)
+            except Exception as ex:
+                print("Camera group exception: ", ex)
+                pass
 
         return camgroup
 
     def persistData(self):
-        camgroup_conf = self.getCamGroup(self.customer, self.location, self.subsite)
-        if self.camera_group is not None and len(camgroup_conf) > 0:
-            self.camera_group = self.camera_group + camgroup_conf
-        elif self.camera_group is None and len(camgroup_conf) > 0:
-            self.camera_group = camgroup_conf
-        elif self.camera_group is None and len(camgroup_conf) == 0:
-            self.camera_group = []
+        camid_conf = self.getCamId(self.customer, self.location, self.subsite,self.camera_group)
+        if self.camera_id is not None and len(camid_conf) > 0:
+            self.camera_id = self.camera_id + camid_conf
+        elif self.camera_id is None and len(camid_conf) > 0:
+            self.camera_id = camid_conf
+        elif self.camera_id is None and len(camid_conf) == 0:
+            self.camera_id = []
         else:
-            self.camera_group = self.getCamGroup()
+            self.camera_id = self.getCamId()
 
-        print("camera group---->", self.camera_group)
+        print("camera group---->", self.camera_id)
         # persistdata, scheduledata = self.schedule.persistData()
         # self.r.set("scheduling", json.dumps(persistdata))
         preprocessconfig = {}
         topicconfig = {}
         # for dt in scheduledata:
-        print("&&&&&&&&&&&&&&&", self.camera_group)
+        print("&&&&&&&&&&&&&&&", self.camera_id)
 
-        jsonreq = {"camera_group_id": self.camera_group}
+        jsonreq = {"camera_id": self.camera_id}
         topicconfig, _ = self.topic.persistData(jsonreq)
 
         # if len(topicconfig)==0:

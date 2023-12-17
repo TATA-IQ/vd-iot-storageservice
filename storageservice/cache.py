@@ -93,7 +93,7 @@ def get_confdata(consul_conf):
 
 path = "config/config.yaml"
 configdata = Config.yamlconfig(path)
-dbconf,storageconf,kafkaconf,consulconf=get_confdata(configdata[0]["consul"])
+dbconf,storageconf,kafkaconf=get_confdata(configdata[0]["consul"])
 print(configdata)
 api = dbconf["apis"]
 kafka=kafkaconf["kafka"]

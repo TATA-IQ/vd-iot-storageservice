@@ -3,4 +3,4 @@
 consul:
   host: 172.16.0.178
   port: 8500
-  env: "dev"
+  env: "devlopment"
