@@ -3,4 +3,8 @@
 consul:
   host: 172.16.0.178
   port: 8500
+<<<<<<< HEAD
   env: "devlopment"
+=======
+  env: "test"
+>>>>>>> c09b221e3d6c0bfe00917693ccd005786b764b23
