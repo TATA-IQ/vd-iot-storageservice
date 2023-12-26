@@ -1,7 +1,8 @@
 import os
 
 import cv2
-
+from console_logging.console import Console
+console=Console()
 
 class Minio_fail:
     """
