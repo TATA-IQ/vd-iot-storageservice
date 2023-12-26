@@ -173,6 +173,8 @@ class Caching:
             bootstrap_servers=kafka,
             auto_offset_reset="latest",
             value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+            group_id="storage_caching"
+            
         )
         console.info("===updating cache====")
         self.persistData()
