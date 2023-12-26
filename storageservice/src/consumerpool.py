@@ -9,6 +9,8 @@ import redis
 from kafka import KafkaConsumer
 from shared_memory_dict import SharedMemoryDict
 from src.consumer import RawTopicConsumer
+from console_logging.console import Console
+console=Console()
 
 os.environ["SHARED_MEMORY_USE_LOCK"] = "1"
 from src.createclient import CreateClient
@@ -18,10 +20,10 @@ topic_smd = SharedMemoryDict(name="topics", size=10000000)
 
 def testcallbackFuture(future):
     if not future.running():
-        print("===>", future)
-    print("=======result====")
-    print(future.result())
-    print("=======callback future====", future.exception())
+        console.info(f"future status: {0}".format(future))
+    
+    console.info(f"future result: {0} ".format(future.result()))
+    console.error("EXCEPTION Consumerpool Future: {0}".format(future.exception()))
 
 
 def testFuture(obj):
@@ -44,8 +46,7 @@ class PoolConsumer:
         Initialize the  Camera Group and connect with redis to take the recent configuration
         """
         self.config = storageconf
-        print("&" * 100)
-        print(self.config)
+        
         redis_server=storageconf["redis"]
         self.kafkahost = kafkaconf["kafka"]
         pool = redis.ConnectionPool(host=redis_server["host"], port=redis_server["port"], db=0)
@@ -55,7 +56,7 @@ class PoolConsumer:
         # self.smd = SharedMemoryDict(name='tokens', size=1024)
 
     def startFuture(self, obj):
-        print("Future")
+        
         a = 0
         obj.connectConsumer()
         # obj.startConsumer()
@@ -114,6 +115,7 @@ class PoolConsumer:
                 del futuredict[cam]
                 del statusdict[cam]
                 self.log.info(f"Killing camera {cam} topic")
+                console.info(f"Killing camera {cam} topic")
 
             for cam in topicdata.keys():
                 
@@ -140,6 +142,7 @@ class PoolConsumer:
                 else:
                     topic_smd[cam_id] = topicdata[cam]
                     self.log.info(f"Updating Data for {cam_id}")
+                    #console.info(f"Updating Data for {cam_id}")
                     if futuredict[cam_id].running() == False:
                         futuredict[cam_id].cancel()
                         topic_smd[cam_id] = topicdata[cam]
@@ -148,10 +151,13 @@ class PoolConsumer:
                         future1 = executor.submit(testFuture, obj)
                         futuredict[cam_id] = future1
                         self.log.info(f"Starting New Conusmer for {cam_id}")
+                        #console.info(f"Starting New Consumer for  {cam_id}")
+
 
                     else:
                         topic_smd[cam_id] = topicdata[cam]
-                        self.log.info(f"Updating Data for {cam_id}")
+                        # self.log.info(f"Updating Data for {cam_id}")
+                        # console.info(f"Updating Data for {cam_id}")
                 time.sleep(2)
             time.sleep(2)
             

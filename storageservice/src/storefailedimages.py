@@ -46,10 +46,10 @@ class Minio_fail:
 
         cv2.imwrite(local_raw_path, self.raw_image)
         cv2.imwrite(local_process_path, self.process_image)
-        print("===saved in local folder===")
+        console.info(" saved in local folder")
 
         # ================ mongo save ===========================
         self.dataconfig["image"]["storage"]["backup_localpath_raw"] = local_raw_path
         self.dataconfig["image"]["storage"]["backup_localpath_process"] = local_process_path
         self.mongobackup_client.insert_one(self.dataconfig)
-        print(f"data inserted into {self.mongobackup_client}")
+        console.success(f"data inserted into {self.mongobackup_client}")

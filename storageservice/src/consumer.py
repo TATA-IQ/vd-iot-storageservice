@@ -20,6 +20,8 @@ from shared_memory_dict import SharedMemoryDict
 from src.createclient import CreateClient
 from src.parser import Config
 from src.storeimages import MinioStorage, MongoStorage, StorageClass
+from console_logging.console import Console
+console=Console()
 
 # from src.saveimages import MinioSave, MongoDBSave
 
@@ -39,7 +41,7 @@ manager = mp.Manager()
 
 def future_callback_error_logger(future):
     e = future.exception()
-    print("Thread pool exception====>", e)
+    console.error(f"Consumer Future error: {e}")
 
 
 class RawTopicConsumer:
@@ -67,9 +69,7 @@ class RawTopicConsumer:
         self.executor = None
         data = topic_smd[cameraid]
 
-        # print(self.config)
-        # print(self.minioclient)
-        # print(self.mongoclient)
+        
         self.topic = data["topic_name"]
         self.log.info(f"Starting for {self.camera_id} and topic {self.topic}")
 
@@ -98,7 +98,7 @@ class RawTopicConsumer:
 
         # session_timeout_ms=10000,heartbeat_interval_ms=7000,
         # self.queue=Queue(100)
-        print("==========creatinfg consumer======")
+        console.info(f"Creating Kafka consumer for topic {0}".format(self.topic))
         self.consumer = KafkaConsumer(
             "out_" + self.topic,
             bootstrap_servers=self.kafkahost,
@@ -107,28 +107,33 @@ class RawTopicConsumer:
             group_id=self.topic,
         )
         # self.consumer.assign([TopicPartition(self.topic, 1)])
+        console.success(f"Created Kafka consumer for topic {0}".format(self.topic))
+        console.info(f"Mongo and Minio client intialization topic {0}".format(self.topic))
+
         clientobj = CreateClient(self.config)
         # self.manager=mp.Manager()
-        print("====creating q")
+        
+        
         self.minio_queue = Queue()
         self.mongo_queue = Queue()
-        print("====creatin client======")
+        
+        console.info(f"Mongo and Minio client creation topic {0}".format(self.topic))
         self.minioclient = clientobj.minio_client()
         self.mongoclient = clientobj.mongo_client()
-        print("========creatin backup client=======")
+        console.success(f"Mongo and Minio client created topic {0}".format(self.topic))
+        console.info(f"Mongo and Minio Backup client creation topic {0}".format(self.topic))
         self.mongobackupclient = clientobj.mongo_backupclient()
         self.mongoreportsclient = clientobj.mongo_reportsclient()
-        print("====creating exectour")
+        console.success(f"Mongo and Minio Backup client creation topic {0}".format(self.topic))
         self.executor = ThreadPoolExecutor(max_workers=3)
-        print("======executor created=========")
         self.log.info(f"Connected Consumer {self.camera_id} for {self.topic}")
-        print("==logger====", self.log)
+        
 
     def isConnected(self):
         """
         checks if the Kafka consumer is connected or not.
         """
-        # print("====Check Self Consumer====",self.consumer)
+        
         return self.consumer.bootstrap_connected()
 
     def convert_image(self, image_str):
@@ -154,7 +159,8 @@ class RawTopicConsumer:
                     imgarr = np.frombuffer(imgarr, dtype=np.uint8)
                     return cv2.imdecode(imgarr, cv2.IMREAD_COLOR)
             except Exception as e:
-                print("exception===>", e)
+                cosnole.error(f"Image conversion error: {ex}")
+                
             return None
 
     def messageParser(self, msg):
@@ -171,8 +177,9 @@ class RawTopicConsumer:
         
         try:
             msg = json.loads(msg.value)
-        except:
-            print(msg)
+        except Exception as ex:
+            console.error(f"Kafka Message parsing exception: {0}".format(ex))
+            # print(msg)
         # msg = msg.value
         # try:
         #     msg=json.loads(msg.value)
@@ -189,8 +196,7 @@ class RawTopicConsumer:
         process_image = self.convert_image(process_image_str)
 
         incident_event = msg["incident_event"]
-        # print("K"*100)
-        # print(incident_event)
+        
         try:
             usecase_inform = msg["usecase"]
         except:
@@ -208,31 +214,22 @@ class RawTopicConsumer:
             None
 
         """
-        print("in minio thread==========")
+        
+        console.info(f"Minio Thread started for {self.topic}")
         count = 0
         while True:
-            # print(self.minio_queue)
-            # print("========minio queue size before getting getting==========")
-            # print("len of q",self.minio_queue.qsize())
-            # print("values",self.minio_queue.get())
-            # print("len of q",self.minio_queue.qsize())
+            
 
             if not self.minio_queue.empty():
-                # print("minio queue is not empty")
+                
                 data = self.minio_queue.get()
-                # print(data)
-                print("===got data===")
+                
                 client, raw_image, processed_image, dataconfig, mongobackup_client = data
-                # print(raw_image)
-                # cv2.imwrite("/home/sridhar.bondla10/gitdev_v2/vd-iot-storageservice/StorageService/storageservice/image/"+str(uuid.uuid4())+".jpg",raw_image)
-                # print("#-"*100)
-                # break
-                print("====savig data====")
                 MinioStorage.save_miniodata(client, raw_image, processed_image, dataconfig, mongobackup_client)
-                print("saved image in minio")
+                console.success("Saved image in minio")
             else:
                 continue
-                # print("minio queue is empty")
+                
 
     def mongo_thread(self):
         """
@@ -246,22 +243,19 @@ class RawTopicConsumer:
 
         """
 
-        print("in mongo thread==========")
+        console.info(f"Mongo thread started for {self.topic}")
         while True:
-            # print("here")
-            # print(self.mongo_queue)
-            # print("========mongo queue size before getting==========")
-            # print(self.mongo_queue.qsize())
+            
             if not self.mongo_queue.empty():
-                # print("mongo queue is not empty")
+                
 
                 mongoclient, dataconfig, mongoreportsclient = self.mongo_queue.get()
-                # print(dataconfig)
+                
                 MongoStorage.save_mongodata(mongoclient, dataconfig, mongoreportsclient)
-                # print("saved in mongo")
+                console.success("Stored data in mongo")
             else:
                 continue
-                # print("mongo queue is empty")
+                
 
     # def saveData(self):
 
@@ -303,7 +297,7 @@ class RawTopicConsumer:
 
         """
 
-        print(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
+        console.info(f"===={self.camera_id} Message Parse Connected for Topic {self.topic}====")
         self.check = True
 
         self.log.info(f"Starting Message Parsing {self.camera_id} for {self.topic}")
@@ -331,7 +325,7 @@ class RawTopicConsumer:
             except:
                 usecase_id=""
             self.log.info(f"stored image for cameraid: {self.camera_id} and  usecaseid: {usecase_id}")
-            print(f"stored image for cameraid: {self.camera_id} and usecaseid: {usecase_id}")
+            console.success(f"stored image for cameraid: {self.camera_id} and usecaseid: {usecase_id}")
             
 
             

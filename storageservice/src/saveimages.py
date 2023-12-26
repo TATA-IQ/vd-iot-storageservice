@@ -11,6 +11,8 @@ import imutils
 import numpy as np
 from minio import Minio
 from minio.error import S3Error
+from console_logging.console import Console
+console=Console()
 
 # client = Minio(endpoint="172.16.0.170:9000",
 #         access_key="R8mQTw7uevt178G216KM",
@@ -147,10 +149,10 @@ class MinioSave:
         try:
             self.client.put_object(self.bucket_name, raw_path, rawimage_bytes, len(rawimage_val))
             self.client.put_object(self.bucket_name, processed_path, processedimage_bytes, len(processedimage_val))
-            print(f"Raw img saved at {self.bucket_name}/{raw_path}")
-            print(f"Processed img at {self.bucket_name}/{processed_path}")
+            console.success(f"Raw img saved at {self.bucket_name}/{raw_path}")
+            console.success(f"Processed img at {self.bucket_name}/{processed_path}")
         except S3Error as exc:
-            print("error occurred.", exc)
+            console.error("error occurred.", exc)
 
         complete_raw_path = self.bucket_name + "/" + raw_path
         complete_processed_path = self.bucket_name + "/" + processed_path
@@ -230,4 +232,4 @@ class MongoDBSave:
         # print(self.bucket_name + "/" + self.rawimage_path() + self.image_name)
         # print(self.bucket_name + "/" + self.processedimage_path() + self.image_name)
         self.mongoclient.insert_one(self.dataconfig)
-        print(f"data inserted into {self.mongoclient}")
+        console.success(f"data inserted into {self.mongoclient}")

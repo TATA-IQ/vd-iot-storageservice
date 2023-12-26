@@ -13,6 +13,8 @@ import numpy as np
 # from minio import Minio
 # from minio.error import S3Error
 from src.storefailedimages import Minio_fail
+from console_logging.console import Console
+console=Console()
 
 
 class StorageClass:
@@ -33,6 +35,7 @@ class StorageClass:
         try:
             self.image_name = dataconfig["image"]["name"]
         except:
+
             self.image_name = dataconfig["image_meta"]["name"]
         self.camera_id = dataconfig["hierarchy"]["camera_id"]
         self.customer_id = dataconfig["hierarchy"]["customer_id"]
@@ -201,7 +204,7 @@ class MinioStorage:
                 pass
                 #print(f"Bucket {bucket_name} already exists")
         except Exception as e:
-            print("exception occured while created bucket",e)
+            console.error("exception occured while created bucket",e)
 
         rawimage_bytes = io.BytesIO(cv2.imencode(".jpg", raw_image)[1])
         processedimage_bytes = io.BytesIO(cv2.imencode(".jpg", processed_image)[1])
@@ -211,12 +214,12 @@ class MinioStorage:
         try:
             client.put_object(bucket_name, raw_path, rawimage_bytes, len(rawimage_val))
             client.put_object(bucket_name, processed_path, processedimage_bytes, len(processedimage_val))
-            # print(f"Raw img saved at {bucket_name}/{raw_path}")
-            # print(f"Processed img at {bucket_name}/{processed_path}")
+            console.success(f"Raw img saved at {bucket_name}/{raw_path}")
+            console.success(f"Processed img at {bucket_name}/{processed_path}")
         except:
             minio_fail_obj = Minio_fail(raw_image, processed_image, dataconfig, mongobackup_client)
             minio_fail_obj.minio_store()
-            print("error occurred.")
+            console.error("Minio error occurred.")
 
         complete_raw_path = bucket_name + "/" + raw_path
         complete_processed_path = bucket_name + "/" + processed_path
@@ -246,16 +249,16 @@ class MongoStorage:
         # print(dataconfig['image']['storage']['raw'])
         # print(dataconfig['image']['storage']['processed'] )
         mongoclient.insert_one(dataconfig)
-        print(f"data inserted into {mongoclient}")
+        console.success(f"data inserted into {mongoclient}")
 
         reportkeys = ["documentId", "usecase", "image", "hierarchy", "time"]
 
-        print("incident count: ", dataconfig["incident_count"])
+        console.info("incident count: ", dataconfig["incident_count"])
         if dataconfig["incident_count"] > 0:
-            print("saving in reports mongodb")
+            console.info("saving in reports mongodb")
             reportsdict = dict(zip(reportkeys, [dataconfig[k] for k in reportkeys]))
             reportsdict["incident"] = reportsdict["usecase"]["incident"]
             del reportsdict["usecase"]["incident"]
             mongo_reportsclient.insert_one(reportsdict)
         else:
-            print("no incidents")
+            console.info("no incidents")
