@@ -1,11 +1,12 @@
 import json
 import threading
-
+from datetime import datetime
 import redis
 import requests
 from caching.topics_caching import *
 from kafka import KafkaConsumer
-
+from console_logging.console import Console
+console=Console()
 
 class Caching:
     """
@@ -146,7 +147,7 @@ class Caching:
             self.camera_id = []
         else:
             self.camera_id = self.getCamId()
-
+        console.info(f"Camera ids:{self.camera_id}")
         print("camera group---->", self.camera_id)
         # persistdata, scheduledata = self.schedule.persistData()
         # self.r.set("scheduling", json.dumps(persistdata))
@@ -172,10 +173,15 @@ class Caching:
             bootstrap_servers=kafka,
             auto_offset_reset="latest",
             value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+            group_id="storage_caching"
+            
         )
+        console.info("===updating cache====")
         self.persistData()
+        console.success(f"Cache Updated for storage at {datetime.utcnow()}")
         for message in consumer:
             if message is None:
                 continue
             else:
                 self.persistData()
+                console.success(f"Cache Updated for storage at {datetime.utcnow()}")

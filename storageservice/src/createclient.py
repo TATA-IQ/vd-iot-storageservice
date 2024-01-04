@@ -1,6 +1,8 @@
 from minio import Minio
 from minio.error import S3Error
 from pymongo import MongoClient
+from console_logging.console import Console
+console=Console()
 
 
 class CreateClient:
