@@ -138,7 +138,20 @@ class Caching:
         return camgroup
 
     def persistData(self):
-        camid_conf = self.getCamId(self.customer, self.location, self.subsite,self.camera_group)
+        camid_conf=None
+        while True:
+            try:
+                camid_conf = self.getCamId(self.customer, self.location, self.subsite,self.camera_group)
+                if len(camid_conf)>0:
+                    break
+                else:
+                    console.error("DbAPi is not up.")
+                    time.sleep(20)
+                    continue
+            except Exception as ex:
+                console.error(f"Api Not Up: {ex}")
+                time.sleep(20)
+                continue
         if self.camera_id is not None and len(camid_conf) > 0:
             self.camera_id = self.camera_id + camid_conf
         elif self.camera_id is None and len(camid_conf) > 0:

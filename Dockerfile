@@ -16,7 +16,6 @@ COPY --from=builder /app/venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 RUN apt-get update
 RUN apt-get install ffmpeg libsm6 libxext6  -y
-Run apt-get install redis -y
 copy storageservice/ /app
 WORKDIR /app
 CMD chmod +x run.sh
